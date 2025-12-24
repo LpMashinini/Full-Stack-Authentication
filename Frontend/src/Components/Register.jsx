@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './Register.css'
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import axios from "axios"
 
 const Register = () => {
@@ -11,14 +11,21 @@ const Register = () => {
         password: ''
     });
 
+    const navigate = useNavigate();
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
             const res = await axios.post('http://localhost:5001/register', values);
-            console.log(res.data);
+            
+            if(res.data.status === "Success"){
+                navigate('/login');
+            } else {
+                alert("Error");
+            }
         } catch (err) {
-            console.error(err.response?.data);
+            console.error(err);
             
         }
 
