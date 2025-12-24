@@ -27,6 +27,7 @@ const db = mysql.createConnection({
 app.post('/register', (req, res) => {
 
     const sql = "INSERT INTO login (`name`,`email`,`password`) VALUES (?,?,?)";
+
     bcrypt.hash(req.body.password.toString(), salt, (err, hash) => {
 
         if (err) return res.json({ Error: "Error for hashing password" });
@@ -42,6 +43,7 @@ app.post('/register', (req, res) => {
             return res.json({status: 'Success'})
         })
     })
+    
 })
 
 app.listen(5001, () => {
