@@ -22,7 +22,7 @@ const Login = () => {
             if (res.data.status === "Success") {
                 navigate('/');
             } else {
-                alert("Error");
+                alert(res.data.Error);
             }
         } catch (err) {
             console.error(err);

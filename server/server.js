@@ -27,7 +27,6 @@ const db = mysql.createConnection({
 app.post('/register', (req, res) => {
 
     const sql = "INSERT INTO login (`name`,`email`,`password`) VALUES (?,?,?)";
-
     bcrypt.hash(req.body.password.toString(), salt, (err, hash) => {
 
         if (err) return res.json({ Error: "Error for hashing password" });
@@ -39,11 +38,42 @@ app.post('/register', (req, res) => {
         ]
 
         db.query(sql, values, (err, result) => {
-            if(err) return res.json({Error: "Inserting data error"});
-            return res.json({status: 'Success'})
+            if (err) return res.json({ Error: "Inserting data error" });
+            return res.json({ status: 'Success' })
         })
     })
-    
+})
+
+app.post("/login", (req, res) => {
+
+    // login api
+
+    const sql = 'SELECT * FROM login WHERE email = ?';
+
+    db.query(sql, [req.body.email], (err, data) => {
+
+
+        if (err) return res.json({ Error: "Error in login Api" });
+
+        if (data.length > 0) {
+
+            bcrypt.compare(req.body.password.toString(), data[0].password, (err, response) => {
+                if (err) return res.json({ Error: "Password compare error" });
+
+                if (response) {
+                    return res.json({ status: "Success" });
+                } else {
+                    return res.json({ Error: "Wrong password" });
+                }
+
+            });
+
+        } else {
+            return res.json({ Error: "Email not found" });
+        }
+
+    })
+
 })
 
 app.listen(5001, () => {
