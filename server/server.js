@@ -1,7 +1,7 @@
 import express from "express"
 import mysql from "mysql2"
 import cors from "cors"
-import jws from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import cookieParser from "cookie-parser"
 
@@ -12,7 +12,12 @@ const app = express();
 
 // middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:5173"],
+    methods: ["POST", "GET"],
+    credentials: true
+}));
+
 app.use(cookieParser());
 
 // Database Connection
@@ -21,6 +26,28 @@ const db = mysql.createConnection({
     user: "root",
     password: "root",
     database: "signup"
+})
+
+const verifyUser = (req, res, next) => {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.json({ Error: "Not authorized" });
+    } else{
+        jwt.verify(token, "jwt-secret-key", (err, decoded) => {
+            if (err) {
+                return res.json({ Error: "Token is not valid" });
+            } else {
+                req.name = decoded.name;
+                next();
+            }   
+        })
+    }
+}
+
+app.get('/', verifyUser , (req, res) => {
+    return res.json({ status: "Success", name: req.name });
+    
 })
 
 
@@ -61,6 +88,11 @@ app.post("/login", (req, res) => {
                 if (err) return res.json({ Error: "Password compare error" });
 
                 if (response) {
+
+                    const name = data[0].name;
+                    const token = jwt.sign({ name },"jwt-secret-key",{expiresIn: '1d'});
+
+                    res.cookie('token', token);
                     return res.json({ status: "Success" });
                 } else {
                     return res.json({ Error: "Wrong password" });
@@ -74,6 +106,11 @@ app.post("/login", (req, res) => {
 
     })
 
+})
+
+app.get('/logout', (req, res) => {
+    res.clearCookie('token');
+    return res.json({ status: "Success" });
 })
 
 app.listen(5001, () => {
