@@ -1,0 +1,40 @@
+services:
+  backend:
+    build: ./Backend
+    container_name: backend-auth
+    env_file:
+      - ./Backend/.env
+    ports:
+      - "5001:5001"
+    networks:
+      - Auth-network  
+    depends_on:
+      - database
+
+  frontend:
+    build: ./Frontend
+    container_name: frontend-auth
+    ports:
+      - "5173:5173"
+    networks:
+      - Auth-network  
+
+  database:
+    image: mysql:8.0
+    container_name: database-auth
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: signup
+    ports:
+      - "3307:3306"   
+    networks:
+      - Auth-network
+    volumes:
+      - database_auth:/var/lib/mysql
+
+networks: 
+  Auth-network:
+    driver: bridge  
+
+volumes:
+  database_auth:
